@@ -25,6 +25,8 @@ class HHGetVacansies(AbstractAPI):
         self.__vacansies = []
 
     def get_response(self):
+        """Парсинг одной страницы с вакансиями"""
+
         response = requests.get("https://api.hh.ru/vacancies", self.__param)
         if response.status_code == 200:
             return response.json()['items']
