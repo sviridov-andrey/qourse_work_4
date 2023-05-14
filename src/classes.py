@@ -3,23 +3,44 @@ import requests
 
 
 class AbstractAPI(ABC):
+
     @abstractmethod
-    def get_vacansys(self):
+    def get_response(self):
+        pass
+
+    @abstractmethod
+    def get_vacansies(self):
         pass
 
 
-class HHGetVacansys(AbstractAPI):
-    __hh_url: str = 'https://api.hh.ru/'
+class HHGetVacansies(AbstractAPI):
+    """Получает инфорацию API о вакансиях с сайта HH"""
 
-    @classmethod
-    def get_vacansys(cls, vacansy):
-        response = requests.get(cls.__hh_url + "vacancies", params={"text": vacansy})
-        vacancy_list = response.json()
-        return vacancy_list
+    def __init__(self, vacansy):
+        self.__param = {
+            "text": vacansy,
+            "page": 0,
+            "per_page": 100
+        }
+        self.__vacansies = []
 
-    def __str__(self):
-        return f'{self.vacancy_list}'
+    def get_response(self):
+        response = requests.get("https://api.hh.ru/vacancies", self.__param)
+        if response.status_code == 200:
+            return response.json()['items']
+        else:
+            print(f'Страница {self.__param["page"]+1}  ошибка получения данных {response.status_code}')
+
+    def get_vacansies(self):
+        pass
 
 
-a = HHGetVacansys.get_vacansys('python')
-print(a)
+    # def __str__(self):
+    #     return f'{self.vacancy_list}'
+
+
+a = HHGetVacansies('python')
+#a.ggg()
+
+print(a.get_response())
+# print(len(a['items']))
