@@ -12,13 +12,18 @@ class AbstractAPI(ABC):
     def get_vacansies(self):
         pass
 
+    @abstractmethod
+    def validate_vacansies(self):
+        pass
+
 
 class HHGetVacansies(AbstractAPI):
     """Получает инфорацию API о вакансиях с сайта HH"""
 
     def __init__(self, vacansy):
+        self.vacansy = vacansy
         self.__param = {
-            "text": vacansy,
+            "text": self.vacansy,
             "page": 0,
             "per_page": 100
         }
@@ -32,7 +37,7 @@ class HHGetVacansies(AbstractAPI):
             return response.json()['items']
 
     def get_vacansies(self, count_page=10):
-        """Получение списка с вакансиями"""
+        """Получение списка вакансий"""
 
         while self.__param['page'] < count_page:
             one_page_vacansies = self.get_response()
@@ -45,13 +50,40 @@ class HHGetVacansies(AbstractAPI):
 
         return self.__vacansies
 
+    def validate_vacansies(self):
+        """Валидация списка вакансий с отсеиванием вакансий не входящих в запрос"""
 
-    # def __str__(self):
-    #     return f'{self.vacancy_list}'
+        converted_vacansies = []
+        for vac in self.__vacansies:
+            if self.vacansy in vac['name'].lower():
+                converted_vacansies.append({
+                    'id': vac['id'],
+                    'title': vac['name'],
+                    'employer': vac['employer']['name'],
+                    'url': vac['alternate_url'],
+                    'salary from': vac['salary']['from'],
+                    'salary to': vac['salary']['to'],
+                    'currency': vac['salary']['currency'],
+                    'area': vac['area']['name'],
+                    'experience': vac['experience']['name'],
+                    'employment': vac['employment']['name']
+                })
+
+        return converted_vacansies
 
 
-a = HHGetVacansies('python')
-#a.ggg()
 
-print(a.get_vacansies())
+    # def __repr__(self):
+    #     return self.__vacansies
+
+
+a = HHGetVacansies('тестировщик')
+vac = []
+for i in a.get_vacansies():
+    if 'тестировщик' in i['name'].lower():  # and 'python' in i:
+        print(i)
+        break
+
+print(len(vac))
+print(*vac, sep='\n')
 # print(len(a['items']))
