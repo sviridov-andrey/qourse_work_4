@@ -30,11 +30,20 @@ class HHGetVacansies(AbstractAPI):
         response = requests.get("https://api.hh.ru/vacancies", self.__param)
         if response.status_code == 200:
             return response.json()['items']
-        else:
-            print(f'Страница {self.__param["page"]+1}  ошибка получения данных {response.status_code}')
 
-    def get_vacansies(self):
-        pass
+    def get_vacansies(self, count_page=10):
+        """Получение списка с вакансиями"""
+
+        while self.__param['page'] < count_page:
+            one_page_vacansies = self.get_response()
+            if one_page_vacansies is not None:
+                self.__vacansies.extend(one_page_vacansies)
+                self.__param['page'] += 1
+            else:
+                print(f'Страница {self.__param["page"] + 1} ошибка получения данных')
+                break
+
+        return self.__vacansies
 
 
     # def __str__(self):
@@ -44,5 +53,5 @@ class HHGetVacansies(AbstractAPI):
 a = HHGetVacansies('python')
 #a.ggg()
 
-print(a.get_response())
+print(a.get_vacansies())
 # print(len(a['items']))
