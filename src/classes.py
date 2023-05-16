@@ -1,3 +1,4 @@
+import os
 from abc import ABC, abstractmethod
 import requests
 
@@ -17,24 +18,56 @@ class AbstractAPI(ABC):
         pass
 
 
+# class AbstractJson(ABC):
+#
+#     @abstractmethod
+#     def create_file(self):
+#         pass
+#
+#     @abstractmethod
+#     def load_file(self):
+#         pass
+#
+
+
 class HHGetVacansies(AbstractAPI):
     """Получает инфорацию API о вакансиях с сайта HH"""
 
-    def __init__(self, vacansy):
+    def __init__(self, vacansy: str):
         self.vacansy = vacansy
+        self.vacansies = []
+        self.__api_str = "https://api.hh.ru/vacancies"
+        self.__first_key = 'items'
+        self.__header = ''
         self.__param = {
             "text": self.vacansy,
             "page": 0,
             "per_page": 100
         }
-        self.__vacansies = []
+
+    @property
+    def get_api_str(self):
+        return self.__api_str
+
+    @property
+    def get_first_key(self):
+        return self.__first_key
+
+    @property
+    def get_header(self):
+        return self.__header
+
+    @property
+    def get_param(self):
+        return self.__param
 
     def get_response(self):
         """Парсинг одной страницы с вакансиями"""
 
-        response = requests.get("https://api.hh.ru/vacancies", self.__param)
+        response = requests.get(self.get_api_str,
+                                headers=self.get_header, params=self.get_param)
         if response.status_code == 200:
-            return response.json()['items']
+            return response.json()[self.get_first_key]
 
     def get_vacansies(self, count_page=10):
         """Получение списка вакансий"""
@@ -42,48 +75,116 @@ class HHGetVacansies(AbstractAPI):
         while self.__param['page'] < count_page:
             one_page_vacansies = self.get_response()
             if one_page_vacansies is not None:
-                self.__vacansies.extend(one_page_vacansies)
+                self.vacansies.extend(one_page_vacansies)
                 self.__param['page'] += 1
             else:
                 print(f'Страница {self.__param["page"] + 1} ошибка получения данных')
                 break
 
-        return self.__vacansies
+        return self.vacansies
 
     def validate_vacansies(self):
-        """Валидация списка вакансий с отсеиванием вакансий не входящих в запрос"""
+        """Валидация списка вакансий с фильтрацией вакансий не входящих в запрос"""
 
+        self.get_vacansies()
         converted_vacansies = []
-        for vac in self.__vacansies:
+        for vac in self.vacansies:
             if self.vacansy in vac['name'].lower():
-                converted_vacansies.append({
-                    'id': vac['id'],
-                    'title': vac['name'],
-                    'employer': vac['employer']['name'],
-                    'url': vac['alternate_url'],
-                    'salary from': vac['salary']['from'],
-                    'salary to': vac['salary']['to'],
-                    'currency': vac['salary']['currency'],
-                    'area': vac['area']['name'],
-                    'experience': vac['experience']['name'],
-                    'employment': vac['employment']['name']
-                })
+                if vac.get('salary') is not None:
+                    salary = {'salary': True,
+                              'salary from': vac['salary']['from'],
+                              'salary to': vac['salary']['to'],
+                              'currency': vac['salary']['currency']
+                              }
+                else:
+                    salary = {'salary': False,
+                              'salary from': None,
+                              'salary to': None,
+                              'currency': None
+                              }
+                vacansy_params = {'id': vac['id'],
+                                  'title': vac['name'],
+                                  'employer': vac['employer']['name'],
+                                  'url': vac['alternate_url'],
+                                  'area': vac['area']['name'],
+                                  'experience': vac['experience']['name'],
+                                  'employment': vac['employment']['name'],
+                                  'portal': 'HeadHunter'
+                                  }
+                vacansy_params.update(salary)
+                converted_vacansies.append(vacansy_params)
 
         return converted_vacansies
 
 
+class SJGetVacansies(HHGetVacansies):
+    """Получает инфорацию API о вакансиях с сайта SuperJob"""
 
-    # def __repr__(self):
-    #     return self.__vacansies
+    def __init__(self, vacansy: str):
+        super().__init__(vacansy)
+        self.vacansy = vacansy
+        self.__vacansies = []
+        self.__api_str = "https://api.superjob.ru/2.0/vacancies"
+        self.__first_key = "objects"
+        self.__header = {"X-Api-App-Id": os.getenv("SJ_API_KEY")}
+        self.__param = {
+            "keyword": self.vacansy,
+            "page": 0,
+            "count": 100
+        }
+
+    @property
+    def get_api_str(self):
+        return self.__api_str
+
+    @property
+    def get_first_key(self):
+        return self.__first_key
+
+    @property
+    def get_header(self):
+        return self.__header
+
+    @property
+    def get_param(self):
+        return self.__param
+
+    def validate_vacansies(self):
+        """Валидация списка вакансий с фильтрацией вакансий не входящих в запрос"""
+
+        self.get_vacansies()
+        converted_vacansies = []
+        for vac in self.vacansies:
+            if self.vacansy in vac['profession'].lower():
+                if vac['payment_from'] == 0 and vac['payment_to'] == 0:
+                    salary = {'salary': False,
+                              'salary from': vac['payment_from'],
+                              'salary to': vac['payment_to'],
+                              'currency': vac['currency']
+                              }
+                else:
+                    salary = {'salary': True,
+                              'salary from': vac['payment_from'],
+                              'salary to': vac['payment_to'],
+                              'currency': vac['currency']
+                              }
+                vacansy_params = {'id': vac['id'],
+                                  'title': vac['profession'],
+                                  'employer': vac['firm_name'],
+                                  'url': vac['link'],
+                                  'area': vac['town']['title'],
+                                  'experience': vac['experience']['title'],
+                                  'employment': vac['type_of_work']['title'],
+                                  'portal': 'SuperJob'
+                                  }
+                vacansy_params.update(salary)
+                converted_vacansies.append(vacansy_params)
+
+        return converted_vacansies
 
 
-a = HHGetVacansies('тестировщик')
-vac = []
-for i in a.get_vacansies():
-    if 'тестировщик' in i['name'].lower():  # and 'python' in i:
-        print(i)
-        break
+a = HHGetVacansies('менеджер')
+v = a.validate_vacansies()
+for i in v:
+    print(i)
 
-print(len(vac))
-print(*vac, sep='\n')
-# print(len(a['items']))
