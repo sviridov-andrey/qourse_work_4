@@ -1,33 +1,6 @@
 import os
-from abc import ABC, abstractmethod
 import requests
-
-
-class AbstractAPI(ABC):
-
-    @abstractmethod
-    def get_response(self):
-        pass
-
-    @abstractmethod
-    def get_vacansies(self):
-        pass
-
-    @abstractmethod
-    def validate_vacansies(self):
-        pass
-
-
-# class AbstractJson(ABC):
-#
-#     @abstractmethod
-#     def create_file(self):
-#         pass
-#
-#     @abstractmethod
-#     def load_file(self):
-#         pass
-#
+from src.abstract_classes import AbstractAPI
 
 
 class HHGetVacansies(AbstractAPI):
@@ -181,6 +154,27 @@ class SJGetVacansies(HHGetVacansies):
                 converted_vacansies.append(vacansy_params)
 
         return converted_vacansies
+
+
+class FileHandling:
+    """Обработка файла со списком вакансий"""
+    def __init__(self, vacansy):
+        self.__filename = vacansy
+
+    def create_file(self):
+        """Запись в файл списка вакансий"""
+        with open(self.__filename, 'w', encoding='utf-8') as file:
+
+
+    def load_file(self):
+        """Загрузка из файла списка вакансий"""
+        pass
+    pass
+
+
+class Vacansy:
+    def __init__(self):
+        pass
 
 
 a = HHGetVacansies('менеджер')
