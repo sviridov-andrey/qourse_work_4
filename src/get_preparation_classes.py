@@ -12,11 +12,10 @@ class HHGetVacansies(AbstractAPI):
         self.__api_str = "https://api.hh.ru/vacancies"
         self.__first_key = 'items'
         self.__header = ''
-        self.__param = {
-            "text": self.vacansy,
-            "page": 0,
-            "per_page": 100
-        }
+        self.__param = {"text": self.vacansy,
+                        "page": 0,
+                        "per_page": 100
+                        }
 
     @property
     def get_api_str(self):
@@ -65,14 +64,14 @@ class HHGetVacansies(AbstractAPI):
             if self.vacansy in vac['name'].lower():
                 if vac.get('salary') is not None:
                     salary = {'salary': True,
-                              'salary from': vac['salary']['from'],
-                              'salary to': vac['salary']['to'],
+                              'salary_from': vac['salary']['from'],
+                              'salary_to': vac['salary']['to'],
                               'currency': vac['salary']['currency']
                               }
                 else:
                     salary = {'salary': False,
-                              'salary from': None,
-                              'salary to': None,
+                              'salary_from': None,
+                              'salary_to': None,
                               'currency': None
                               }
                 vacansy_params = {'id': vac['id'],
@@ -100,11 +99,10 @@ class SJGetVacansies(HHGetVacansies):
         self.__api_str = "https://api.superjob.ru/2.0/vacancies"
         self.__first_key = "objects"
         self.__header = {"X-Api-App-Id": os.getenv("SJ_API_KEY")}
-        self.__param = {
-            "keyword": self.vacansy,
-            "page": 0,
-            "count": 100
-        }
+        self.__param = {"keyword": self.vacansy,
+                        "page": 0,
+                        "count": 100
+                        }
 
     @property
     def get_api_str(self):
@@ -130,17 +128,10 @@ class SJGetVacansies(HHGetVacansies):
         for vac in self.vacansies:
             if self.vacansy in vac['profession'].lower():
                 if vac['payment_from'] == 0 and vac['payment_to'] == 0:
-                    salary = {'salary': False,
-                              'salary from': vac['payment_from'],
-                              'salary to': vac['payment_to'],
-                              'currency': vac['currency']
-                              }
+                    salary = {'salary': False}
                 else:
-                    salary = {'salary': True,
-                              'salary from': vac['payment_from'],
-                              'salary to': vac['payment_to'],
-                              'currency': vac['currency']
-                              }
+                    salary = {'salary': True}
+
                 vacansy_params = {'id': vac['id'],
                                   'title': vac['profession'],
                                   'employer': vac['firm_name'],
@@ -148,6 +139,9 @@ class SJGetVacansies(HHGetVacansies):
                                   'area': vac['town']['title'],
                                   'experience': vac['experience']['title'],
                                   'employment': vac['type_of_work']['title'],
+                                  'salary_from': vac['payment_from'],
+                                  'salary_to': vac['payment_to'],
+                                  'currency': vac['currency'],
                                   'portal': 'SuperJob'
                                   }
                 vacansy_params.update(salary)
@@ -161,9 +155,9 @@ class FileHandling:
     def __init__(self, vacansy):
         self.__filename = vacansy
 
-    def create_file(self):
-        """Запись в файл списка вакансий"""
-        with open(self.__filename, 'w', encoding='utf-8') as file:
+    # def create_file(self):
+    #     """Запись в файл списка вакансий"""
+    #     with open(self.__filename, 'w', encoding='utf-8') as file:
 
 
     def load_file(self):
@@ -177,7 +171,7 @@ class Vacansy:
         pass
 
 
-a = HHGetVacansies('менеджер')
+a = SJGetVacansies('менеджер')
 v = a.validate_vacansies()
 for i in v:
     print(i)
