@@ -9,11 +9,13 @@ class FileHandling(AbstractJson):
     def __init__(self, vacansy, all_vacansies):
         self.__filename = f'{vacansy.title()}.json'
         self.all_vacansies = all_vacansies
+        self.create_file()
 
     def create_file(self):
         """Запись в файл списка вакансий"""
+
         with open(self.__filename, 'w', encoding='utf-8') as file:
-            json.dump(self.all_vacansies)
+            json.dump(self.all_vacansies, file, ensure_ascii=False, indent=4)
 
 
     def load_file(self):
