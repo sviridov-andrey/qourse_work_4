@@ -11,7 +11,7 @@ def chose_vacancy():
     return vacansy
 
 
-def enter_parsing(vacansy):
+def start_parsing(vacansy):
     """Старт парсинга. Выбор пользователем порталов используемых для поиска"""
 
     choise_pars = input(f'Для поиска вакансий введите одно из значений:\n'
