@@ -148,31 +148,3 @@ class SJGetVacansies(HHGetVacansies):
                 converted_vacansies.append(vacansy_params)
 
         return converted_vacansies
-
-
-class FileHandling:
-    """Обработка файла со списком вакансий"""
-    def __init__(self, vacansy):
-        self.__filename = vacansy
-
-    # def create_file(self):
-    #     """Запись в файл списка вакансий"""
-    #     with open(self.__filename, 'w', encoding='utf-8') as file:
-
-
-    def load_file(self):
-        """Загрузка из файла списка вакансий"""
-        pass
-    pass
-
-
-class Vacansy:
-    def __init__(self):
-        pass
-
-
-a = SJGetVacansies('менеджер')
-v = a.validate_vacansies()
-for i in v:
-    print(i)
-
