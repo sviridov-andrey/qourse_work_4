@@ -18,7 +18,6 @@ class FileHandling(AbstractJson):
         with open(self.__filename, 'w', encoding='utf-8') as file:
             json.dump(self.all_vacansies, file, ensure_ascii=False, indent=4)
 
-
     def load_file(self):
         """Загрузка из файла списка вакансий"""
         pass
@@ -49,8 +48,24 @@ class Vacansy:
             return False
         return self.salary_from >= other.salary_from
 
+    def __str__(self):
+        if self.salary is False:
+            salary_from = 'не указана'
+            salary_to = ''
+            currency = ''
 
-# a = SJGetVacansies('менеджер')
-# v = a.validate_vacansies()
-# for i in v:
-#     print(i)
+        else:
+            currency = self.currency
+            if self.salary_from or self.salary_from != 0:
+                salary_from = f'От {self.salary_from}'
+            else:
+                salary_from = f''
+            if self.salary_to or self.salary_to != 0:
+                salary_to = f'От {self.salary_to}'
+            else:
+                salary_to = f''
+
+        return f'Вакансия: {self.title}\nРаботодатель: {self.employer}\nГород: {self.area}\nURL: {self.url}\n' \
+               f'Зарплата: {salary_from} {salary_to} {currency}\nОпыт: {self.experience}\n' \
+               f'Занятость: {self.employment}\nВакансия с сайта: {self.portal}'
+
