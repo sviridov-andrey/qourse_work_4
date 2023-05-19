@@ -36,6 +36,8 @@ class FileHandling(AbstractJson):
         return vacansies
 
     def not_filtred_vacansies(self):
+        """Фильтрация не включена в список вакансий"""
+
         data = self.load_file()
         vacansies = [Vacansy(x['title'], x['employer'], x['url'], x['area'], x['experience'], x['employment'],
                              x['salary'], x['salary_from'], x['salary_to'], x['currency'], x['portal'])
