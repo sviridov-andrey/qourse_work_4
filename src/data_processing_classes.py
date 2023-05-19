@@ -1,6 +1,5 @@
 import json
 
-from src.get_preparation_classes import SJGetVacansies, HHGetVacansies
 from src.abstract_classes import AbstractJson
 
 
@@ -10,7 +9,6 @@ class FileHandling(AbstractJson):
         self.__filename = f'{vacansy.title()}.json'
         self.all_vacansies = all_vacansies
         self.create_file()
-        print("Инициализация")
 
     def create_file(self):
         """Запись в файл списка вакансий"""
@@ -20,7 +18,28 @@ class FileHandling(AbstractJson):
 
     def load_file(self):
         """Загрузка из файла списка вакансий"""
-        pass
+
+        with open(self.__filename, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+
+        return data
+
+    def filtred_vacansies(self, filter_field, filter_value):
+        data = self.load_file()
+        vacansies = [Vacansy(x['title'], x['employer'], x['url'], x['area'], x['experience'], x['employment'],
+                             x['salary'], x['salary_from'], x['salary_to'], x['currency'], x['portal'])
+                     for x in data
+                     if filter_value in x[filter_field].lower()
+                     ]
+        print("вакансии отфильтрованы")
+        return vacansies
+
+    def not_filtred_vacansies(self):
+        data = self.load_file()
+        vacansies = [Vacansy(x['title'], x['employer'], x['url'], x['area'], x['experience'], x['employment'],
+                             x['salary'], x['salary_from'], x['salary_to'], x['currency'], x['portal'])
+                     for x in data]
+        return vacansies
 
 
 class Vacansy:
@@ -56,16 +75,15 @@ class Vacansy:
 
         else:
             currency = self.currency
-            if self.salary_from or self.salary_from != 0:
+            if self.salary_from and self.salary_from != 0:
                 salary_from = f'От {self.salary_from}'
             else:
                 salary_from = f''
-            if self.salary_to or self.salary_to != 0:
-                salary_to = f'От {self.salary_to}'
+            if self.salary_to and self.salary_to != 0:
+                salary_to = f'До {self.salary_to}'
             else:
                 salary_to = f''
 
         return f'Вакансия: {self.title}\nРаботодатель: {self.employer}\nГород: {self.area}\nURL: {self.url}\n' \
                f'Зарплата: {salary_from} {salary_to} {currency}\nОпыт: {self.experience}\n' \
                f'Занятость: {self.employment}\nВакансия с сайта: {self.portal}'
-
