@@ -25,13 +25,14 @@ class FileHandling(AbstractJson):
         return data
 
     def filtred_vacansies(self, filter_field, filter_value):
+        """Фильтрация списка вакансий"""
+
         data = self.load_file()
         vacansies = [Vacansy(x['title'], x['employer'], x['url'], x['area'], x['experience'], x['employment'],
                              x['salary'], x['salary_from'], x['salary_to'], x['currency'], x['portal'])
                      for x in data
                      if filter_value in x[filter_field].lower()
                      ]
-        print("вакансии отфильтрованы")
         return vacansies
 
     def not_filtred_vacansies(self):
